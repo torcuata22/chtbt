@@ -5,3 +5,26 @@
     <input type="text" name="message" placeholder="Enter message">
     <button type="submit">Send</button>
 </form>
+{{ chatroom.slug | json_script:"json-chatroomname" }}
+
+<script>
+    //create variable that holds the chatroomname:
+    const chatRoomName = JSON.parse(document.getElementById('json-chatroomname').textContent)
+
+    //create new websocket in this particular path:
+    const chatSocket = new WebSocket(
+        'ws://'  //because we are using web sockets instead of http
+        +window.location.host //gets domain name dynamically
+        + '/ws/' // routing pattern
+        + chatRoomName //completes routing pattern
+        +'/'
+    )
+    chatSocket.onmessage = function(e){
+        console.log('socket open')
+    }
+
+    chatSocket.onclose= function(e){
+        console.log('socket closed')
+    }
+
+</script>
