@@ -28,8 +28,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     #handles what happens when we receive a particular message:
-    async def receive(self, message_data):
-        data = json.loads(message_data) #loads the data as json
+    async def receive(self, text_data):
+        data = json.loads(text_data) #loads the data as json
         #decode the data it received:
         message = data['message']
         username = data['username']

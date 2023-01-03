@@ -2,6 +2,10 @@
 <!--To get username:-->
 {{request.user.username}}
 
+<!--To display messages:-->
+<div id="chat-messages"></div>
+
+
 <form method="post">
     {% csrf_token %}
     <input id="message-input" type="text" name="message" placeholder="Enter message">
@@ -26,7 +30,16 @@
         +'/'
     )
     chatSocket.onmessage = function(e){
-        console.log('socket open')
+        // console.log('socket open') this is where we will display the message that is coming with the event (e)
+        //this const will have the data being dumped as json:
+        const data = JSON.parse(e.data)
+        if (data.message){
+            let html = data.username + ':' + data.message + '</br>'
+            document.getElementById('chat-messages').innerHTML+=html
+        }else {
+            alert('The message was empty')
+        }
+
     }
 
     chatSocket.onclose= function(e){
@@ -47,7 +60,7 @@
         }))
     
         messageInput.value = "" //set mesage to empty after it's sent
-    
+
     }
 
 </script>
