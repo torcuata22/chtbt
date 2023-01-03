@@ -1,6 +1,8 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from asgiref.sync import sync_to_async
+from django.contrib.auth.models import User
+from .models import ChatRoom, ChatMessage
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -44,6 +46,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'room': room
             }
         )
+        await self.save_message(username, room, message)
 
     #send message to the room:
     async def chat_message(self, event):
@@ -59,3 +62,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 #consumer has been configured to receive a message and send it back to the client
 #we need to receive the message inside the client and display it
+
+    @sync_to_async #this decorator takes a sync function and returns an async function that wraps it.
+    def save_message(self, username, room, message):
+        user = User.objects.get(username = username)
+        room = ChatRoom.objects.get(slug=room)
+        ChatMessage.objects.create(user = user, room = room, message_content=message)
