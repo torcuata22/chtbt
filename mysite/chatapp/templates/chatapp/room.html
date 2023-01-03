@@ -1,16 +1,40 @@
-{{ chatroom.name }}
+{% extends 'chatapp/base.html' %}
+{% block body %}
+<div class="m-10 font-bold">
+    {{ chatroom.name }}
+</div>
+
+
+
 <!--To get username:-->
-{{request.user.username}}
+<!-- {{request.user.username}} -->
 
 <!--To display messages:-->
-<div id="chat-messages"></div>
+<div class="message-container m-10 overflow-auto h-[700px]" id="message-container">
+    <div id="chat-messages">
+        {% for message in messages %}
+        <div class="message shadow-lg p-3 m-5 rounded-lg w-1/2 bg-blue-300">
+            <div class="text-sm text-gray-500">
+                {{ message.user.username }}
+            </div>
+                {{message.message_content}}  <!--message_content is the model field-->
+            <div class="text-sm text-gray-500">
+                {{ message.date }}
+            </div>
+        </div>
+        
+        {% endfor %}
+    </div>
+</div>
+<div class="form-container fixed inset-x-0 bottom-0 bg-blue-900 p-5 ">
+    <form method="post">
+        {% csrf_token %}
+        <input class="rounded-md px-2" id="message-input" type="text" name="message" placeholder="Enter message">
+        <button class="text-white ml-5" id="send-button" type="submit">Send</button>
+    </form>
 
+</div>
 
-<form method="post">
-    {% csrf_token %}
-    <input id="message-input" type="text" name="message" placeholder="Enter message">
-    <button id="send-button" type="submit">Send</button>
-</form>
 {{ chatroom.slug | json_script:"json-chatroomname" }}
 {{request.user.username | json_script:"json-username"}}
 
@@ -30,12 +54,15 @@
         +'/'
     )
     chatSocket.onmessage = function(e){
-        // console.log('socket open') this is where we will display the message that is coming with the event (e)
         //this const will have the data being dumped as json:
         const data = JSON.parse(e.data)
         if (data.message){
-            let html = data.username + ':' + data.message + '</br>'
+    
+            let html = '<div class="message shadow-lg p-3 rounded-lg w-1/2 bg-blue-300 m-3">' + 
+                '<div class="text-sm text-gray-500">' +
+                data.username + '</div>' + data.message + '<div class="text-sm text-gray-500">' + 'Now' + '</div>'
             document.getElementById('chat-messages').innerHTML+=html
+                    scroll()
         }else {
             alert('The message was empty')
         }
@@ -63,4 +90,12 @@
 
     }
 
+    function scroll(){
+        const mcontainer = document.getElementById('message-container')
+        mcontainer.scrollTop = mcontainer.scrollHeight
+    }
+    scroll()
+
 </script>
+
+{% endblock %}
