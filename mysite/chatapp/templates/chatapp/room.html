@@ -1,15 +1,21 @@
 {{ chatroom.name }}
+<!--To get username:-->
+{{request.user.username}}
 
 <form method="post">
     {% csrf_token %}
-    <input type="text" name="message" placeholder="Enter message">
-    <button type="submit">Send</button>
+    <input id="message-input" type="text" name="message" placeholder="Enter message">
+    <button id="send-button" type="submit">Send</button>
 </form>
 {{ chatroom.slug | json_script:"json-chatroomname" }}
+{{request.user.username | json_script:"json-username"}}
 
 <script>
     //create variable that holds the chatroomname:
     const chatRoomName = JSON.parse(document.getElementById('json-chatroomname').textContent)
+
+    //create new variable that holds the user name so I can pass it along with the message:
+    const username = JSON.parse(document.getElementById('json-username').textContent)
 
     //create new websocket in this particular path:
     const chatSocket = new WebSocket(
@@ -25,6 +31,23 @@
 
     chatSocket.onclose= function(e){
         console.log('socket closed')
+    }
+
+    //get access to "submit" button:
+    document.getElementById('send-button').onclick = function(e){
+        e.preventDefault()
+        const messageInput = document.getElementById('message-input')
+        const message = messageInput.value //gets the content of the actual message and stores it in the variable
+        messageInput.value = "" //set mesage to empty after it's sent
+        //send message to socket as JSON string (this is the data sent to consumers.py):
+        chatSocket.send(JSON.stringify({
+            'message':message,
+            'username': username, //sends username of user who is logged in
+            'room': chatRoomName //sends the chatroom name (this value was extracted @beginning of file)
+        }))
+    
+        messageInput.value = "" //set mesage to empty after it's sent
+    
     }
 
 </script>
